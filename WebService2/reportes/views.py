@@ -24,6 +24,7 @@ from reportlab.lib.colors import (
 )
 import json
 import io
+from django.http import FileResponse
 
 
 # Create your views here.
@@ -81,6 +82,8 @@ def user_detail_view(request, pk=None):
 
 
 def reportes_view(request):
+
+    print ("Entre reportes_view01")
     Story = []
     buff = io.BytesIO()
     doc = SimpleDocTemplate(buff, pagesize=letter, rightMargin=26, leftMargin=32, topMargin=72, bottomMargin=18)
@@ -141,9 +144,7 @@ def reportes_view(request):
     headline_mayor4.spaceAfter = 0
     headline_mayor4.spaceBefore = 0
 
-    response = HttpResponse(content_type='application/pdf')
-    # response['Content-Disposition'] = 'attachment; filename="Historia.pdf"'
-    response['Content-Disposition'] = 'attachment; filename="albertoWebService.pdf"'
+
 
 
     myConexion = MySQLdb.connect(host='localhost', user='root', passwd='', db='user')
@@ -151,6 +152,7 @@ def reportes_view(request):
     cur.execute("SELECT id, url, username, email, is_staff   FROM reportes_user order by id")
     Usuarios = []
 
+    print("Entre reportes_view02")
     for id, url, username, email, is_staff in cur.fetchall():
         Usuarios.append({'id': id, 'url': url, 'username': username, 'email': email, 'is_staff': is_staff})
         texto1 = '_______________________________________________________________________________________________'
@@ -190,15 +192,18 @@ def reportes_view(request):
     context['Usuarios'] = Usuarios
 
     print(Usuarios)
+    print("A preparar archivo")
+
+    response = HttpResponse(content_type='application/pdf')
+    response['Content-Disposition'] = 'attachment; filename="albertoWebService.pdf"'
     doc.build(Story)
     response.write(buff.getvalue())
     buff.close()
-    #return response
-    # send file
-    obj_formato = models.FormatoManual.objects.get(nombre_formato=nombre_formato)
 
-    response = FileResponse(response, content_type='application/pdf')
-    response['Content-Disposition'] = 'attachment; filename="{0}.pdf"'.format(obj_formato.nombre_formato)
+    # send file
+
+
+    print("Listo me devuelvo")
     return response
 
     return Response(response)
